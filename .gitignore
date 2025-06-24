@@ -1,0 +1,10 @@
+# Python virtual environment
+venv/
+# Mac-specific junk
+.DS_Store
+# Jupyter checkpoints
+.ipynb_checkpoints/
+# Python cache
+__pycache__/
+# VS Code workspace settings
+.vscode/
