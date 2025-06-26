@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2025-06-26
+### Added
+
+- Modified `BasePortfolioEnv` (PortfolioEnv) within the src/ directory to remain temporarily operable as an RL agent prior to later integration with doctrines like Log Return, Sharpe Reward, and Drawdown Penalty.
+  - Basic environment simulating asset returns and portfolio rebalancing.
+  - Included rolling window state and daily reward based on raw return. 
+  - Lacks reward subclassing, clipping, or drawdown awareness (preserved for pedagogical comparison).
+- Uploaded cleaned daily price data (daily_prices.csv) to data/ for reproducible training and evaluation.
+
+### Notes
+- Nil
+
+### Next
+- Begin development of training and evaluation agents to test operability of Base Portfolio class
+- Develop logic for Log Return, Sharpe Reward, and Drawdown Penalty classes. 
+
+
+
 ## [0.2.0] - 2025-06-25
 ### Added
 - Developed `BasePortfolioEnv`, the shared abstract environment class from which all RL reward models (log-return, Sharpe, drawdown) will inherit.
@@ -18,10 +36,6 @@ All notable changes to this project will be documented in this file.
 - This environment forms the **core control logic** of the project: all reward variants build on this common simulation engine.
 - Designed for clarity, reproducibility, and extensibility, enabling clean experimentation with alternative risk-reward tradeoffs in portfolio optimization.
 
-### Next?
-- Integrate `BasePortfolioEnv` into a unified registry system for dynamic reward switching (e.g., CLI flag for `--reward_type`)
-- Add unit tests for `BasePortfolioEnv` simulation and reward delegation
-- Finalize reward modules for drawdown and Sharpe variants with improved stability
 
 ## [0.1.0] - 2025-06-24
 ### Added
