@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.2.2] - 2025-06-27
 ### Added
 
-- train_agent.py and test_agent.py to establish baseline training and evaluation pipelines using the foundational BasePortfolioEnv.
+- train_agent.py and test_agent.py to establish baseline training and evaluation pipelines using the foundational `BasePortfolioEnv`.
 
   - train_agent.py: Trains a PPO agent on the core environment using standard SB3 hyperparameters and saves the model to models/.
 
