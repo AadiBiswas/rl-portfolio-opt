@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2] - 2025-06-27
+### Added
+
+- train_agent.py and test_agent.py to establish baseline training and evaluation pipelines using the foundational BasePortfolioEnv.
+
+  - train_agent.py: Trains a PPO agent on the core environment using standard SB3 hyperparameters and saves the model to models/.
+
+  - test_agent.py: Evaluates a trained agent on historical price data and reports portfolio performance, reward trajectory, and cumulative return.
+
+- Integrated DummyVecEnv wrapping and model checkpointing for compatibility with stable-baselines3.
+
+### Notes
+- These scripts serve as the initial scaffolding for future experiments across doctrine variants.
+
+- Modular and lightweight, they assume a generic reward structure and lack customization for advanced reward shaping (e.g., log return, Sharpe-based consistency, drawdown sensitivity).
+
+### Next
+- Finalize and integrate doctrine-specific environment class logic for:
+
+  - LogReturnEnv: Reward scaled by log(1 + return), with optional gain bonus and volatility sensitivity.
+
+  - SharpeRewardEnv: Risk-adjusted reward based on return consistency over a rolling window.
+
+  - DrawdownPenaltyEnv: Penalizes capital depletion and sharp drops while encouraging sustainable growth.
+
+
+
 ## [0.2.1] - 2025-06-26
 ### Added
 
@@ -16,8 +43,6 @@ All notable changes to this project will be documented in this file.
 
 ### Next
 - Begin development of training and evaluation agents to test operability of Base Portfolio class
-- Develop logic for Log Return, Sharpe Reward, and Drawdown Penalty classes. 
-
 
 
 ## [0.2.0] - 2025-06-25
@@ -36,6 +61,10 @@ All notable changes to this project will be documented in this file.
 - This environment forms the **core control logic** of the project: all reward variants build on this common simulation engine.
 - Designed for clarity, reproducibility, and extensibility, enabling clean experimentation with alternative risk-reward tradeoffs in portfolio optimization.
 
+### Next?
+- Integrate `BasePortfolioEnv` into a unified registry system
+- Add unit tests for `BasePortfolioEnv` simulation and reward delegation
+
 
 ## [0.1.0] - 2025-06-24
 ### Added
@@ -44,3 +73,7 @@ All notable changes to this project will be documented in this file.
 - Pulled daily price data for SPY, QQQ, AAPL, GLD, TLT via yfinance
 - Plotted cumulative returns and correlation heatmap
 - Saved cleaned data (close prices & daily returns) to `data/` as CSVs
+
+### [Next]
+- Build custom OpenAI Gym-compatible trading environment
+- Implement reward logic and market step simulation
