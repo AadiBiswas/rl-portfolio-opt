@@ -7,4 +7,11 @@ This project applies deep reinforcement learning to the problem of dynamic portf
 - Model transaction costs, slippage, and risk-adjusted returns
 - Extend environments and policy networks for practical portfolio management<br><br>
 
+## HOW TO TRAIN AND TEST MODELS IN TERMINAL:
+- Step 1: Import relevant data (or test on provided data): `daily_returns.csv`
+- Step 2: Activate virtual environment `source venv/bin/activate`
+- Step 3: Train model `python train_agent.py --tag run1_window30`
+    - NOTE: All models will temporarily be trained on the `BasePortfolioEnv` class, prior to doctrinal implementation
+- Step 4: Test model: python test_agent.py (prints your final portfolio value and cumulative returns.)
+
 **🚧 WORK IN PROGRESS**
