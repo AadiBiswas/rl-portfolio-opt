@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2025-06-28
+### Added
+- Implemented portfolio_env_log_returns.py, portfolio_env_sharpe_ratio.py, and portfolio_env_drawdown.py to introduce rudimentary `LogReturnEnv`, `SharpeRewardEnv`, and `DrawdownPenaltyEnv` doctrine classes which inherit from `BasePortfolioEnv`class.
+- Updated `BasePortfolioEnv` class to account for NaN, inf, and zero-division edge cases.
+
+### Notes
+- Doctrines are still preliminary and frequently lead to 80-100% portfolio drawdowns.
+- `BasePortfolioEnv` can still operate independently of doctrines.
+  - Feature will be removed once doctrines demonstrate consistent alpha.
+- For the sake of standardised comparison, all models will be trained on:
+  - 50k training steps
+  - 30-day rolling window
+  - 365-day testing window. 
+
+### Next
+- Modify doctrines to consistently generate positive alpha.
+- Finalize `BasePortfolioEnv` structure to remove potential failure points from multiple inheritance.
+
 ## [0.2.2] - 2025-06-27
 ### Added
 
