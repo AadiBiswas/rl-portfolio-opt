@@ -1,115 +1,154 @@
+# === portfolio_env.py ===
 import gym
 from gym import spaces
 import numpy as np
 import pandas as pd
+from collections import deque
 
-class PortfolioEnv(gym.Env):
+class BasePortfolioEnv(gym.Env):
     """
-    Custom OpenAI Gym environment for portfolio optimization using historical price data.
-    Simulates a multi-asset portfolio allocation task with reward based on portfolio returns.
+    Shared base class for portfolio optimization environments.
+    Includes logic for action handling, portfolio simulation, and observation.
+    Reward logic should be implemented in subclass via `compute_reward`.
+    Optimized to support multiple doctrines (log-return, Sharpe, drawdown) with clean modularity.
     """
-    def __init__(self, price_df, initial_cash=1_000_000, window_size=30, verbose=False):
-        super(PortfolioEnv, self).__init__()
+    def __init__(self, price_df, initial_cash=1_000_000, window_size=30, verbose=False,
+                 max_weight_per_asset=0.5, allow_drawdown_recovery=True, max_episode_length=None):
+        super(BasePortfolioEnv, self).__init__()
 
         self.price_df = price_df
         self.initial_cash = initial_cash
         self.window_size = window_size
         self.verbose = verbose
+        self.max_weight_per_asset = max_weight_per_asset
+        self.allow_drawdown_recovery = allow_drawdown_recovery
+        self.max_episode_length = max_episode_length
 
         self.n_assets = price_df.shape[1]
 
-        # Action: portfolio weights for each asset (must sum to 1)
         self.action_space = spaces.Box(low=0, high=1, shape=(self.n_assets,), dtype=np.float32)
-
-        # Observation: historical window of asset prices
         self.observation_space = spaces.Box(
-            low=-np.inf,
-            high=np.inf,
-            shape=(self.window_size, self.n_assets),
-            dtype=np.float32
+            low=-np.inf, high=np.inf, shape=(self.window_size, self.n_assets), dtype=np.float32
         )
+
+        # Core portfolio state trackers
+        self.recent_returns = deque(maxlen=20)  # For volatility-aware doctrines (Sharpe, Drawdown)
+        self.portfolio_history = deque(maxlen=50)  # Optional for custom rolling drawdown logic
 
         self.reset()
 
-    def reset(self):
-        """
-        Reset environment to initial state.
-        """
-        self.current_step = self.window_size
-        self.cash = self.initial_cash
-        self.portfolio_value = self.initial_cash
-        self.done = False
+    def seed(self, seed=None):
+        np.random.seed(seed)
+        if self.verbose:
+            print(f"[Info] Environment seeded with {seed}")
 
+    def reset(self):
+        self.current_step = np.random.randint(self.window_size, len(self.price_df) - 1)
+        self.portfolio_value = self.initial_cash
+        self.max_portfolio_value = self.initial_cash
+        self.done = False
+        self.steps_elapsed = 0
+        self.recent_returns.clear()
+        self.portfolio_history.clear()
         return self._get_observation()
 
     def step(self, action):
-        """
-        Execute one time step within the environment.
-        """
-        assert action.shape == (self.n_assets,), f"Invalid action shape: {action.shape}"
-
-        # Normalize and clip action to form portfolio weights
         weights = np.clip(action, 0, 1)
         total_weight = np.sum(weights)
 
         if not np.isfinite(total_weight) or total_weight == 0:
             if self.verbose:
-                print(f"[Warning] Invalid action normalization at step {self.current_step}. Using equal weights.")
+                print(f"[Warning] Invalid action at step {self.current_step}. Using equal weights.")
             weights = np.ones_like(weights) / self.n_assets
         else:
             weights /= total_weight
 
-        # Get asset prices and compute returns
+        if self.max_weight_per_asset < 1.0:
+            if np.any(weights > self.max_weight_per_asset):
+                if self.verbose:
+                    print(f"[Warning] Allocation cap exceeded at step {self.current_step}. Clipping weights.")
+                weights = np.minimum(weights, self.max_weight_per_asset)
+                weights /= np.sum(weights)
+
         prev_prices = self.price_df.iloc[self.current_step - 1]
         current_prices = self.price_df.iloc[self.current_step]
         returns = current_prices / prev_prices - 1
 
-        # Replace any invalid returns
         if not np.all(np.isfinite(returns)):
             if self.verbose:
-                print(f"[Warning] Invalid asset returns at step {self.current_step}. Replacing with 0s.")
+                print(f"[Warning] Invalid returns at step {self.current_step}. Replacing with 0s.")
             returns = np.nan_to_num(returns)
 
-        # Portfolio return
-        portfolio_return = np.dot(returns, weights)
-
-        # Clip extreme returns to prevent overflows
-        portfolio_return = np.clip(portfolio_return, -1, 1)
-
-        if not np.isfinite(portfolio_return):
+        if np.any(returns < -0.95):
             if self.verbose:
-                print(f"[Warning] NaN or inf portfolio return at step {self.current_step}. Setting to 0.")
-            portfolio_return = 0.0
-
-        self.portfolio_value *= (1 + portfolio_return)
-
-        obs = self._get_observation()
-        reward = portfolio_return
-        self.current_step += 1
-        done = self.current_step >= len(self.price_df)
+                print(f"[Warning] Extreme negative return detected at step {self.current_step}. Using equal weights.")
+            weights = np.ones_like(weights) / self.n_assets
 
         if self.verbose:
-            print(f"Step: {self.current_step} | Portfolio Value: ${self.portfolio_value:,.2f} | Return: {portfolio_return:.4%}")
+            print(f"[Debug] Weights: {weights}")
+            print(f"[Debug] Returns: {returns}")
 
-        return obs, reward, done, {}
+        reward = self.compute_reward(returns, weights)
+
+        if not np.isfinite(reward):
+            if self.verbose:
+                print(f"[Warning] Non-finite reward at step {self.current_step}. Setting to 0.")
+            reward = 0.0
+
+        portfolio_return = np.dot(returns, weights)
+        if not np.isfinite(portfolio_return):
+            if self.verbose:
+                print(f"[Warning] Invalid portfolio return at step {self.current_step}. Setting to 0.")
+            portfolio_return = 0.0
+
+        portfolio_return = np.clip(portfolio_return, -0.99, 1.0)
+
+        if self.verbose:
+            print(f"[Debug] Step {self.current_step} | Return: {portfolio_return:.6f} | Reward: {reward:.6f} | PV before: {self.portfolio_value:.2f}")
+
+        self.portfolio_value *= (1 + portfolio_return)
+        self.max_portfolio_value = max(self.portfolio_value, self.max_portfolio_value)
+
+        self.recent_returns.append(portfolio_return)
+        self.portfolio_history.append(self.portfolio_value)
+
+        obs = self._get_observation()
+        self.current_step += 1
+        self.steps_elapsed += 1
+
+        done = (
+            self.current_step >= len(self.price_df)
+            or self.portfolio_value <= 10.0
+            or (self.max_episode_length is not None and self.steps_elapsed >= self.max_episode_length)
+        )
+
+        if self.portfolio_value <= 10.0:
+            if self.verbose:
+                print(f"[Info] Portfolio value nearly depleted.")
+            if not self.allow_drawdown_recovery:
+                done = True
+            else:
+                self.portfolio_value = max(self.portfolio_value, 10.0)
+
+        info = {
+            "step": self.current_step,
+            "portfolio_value": self.portfolio_value,
+            "reward": reward
+        }
+
+        return obs, reward, done, info
 
     def _get_observation(self):
-        """
-        Return the window of historical prices used as observation.
-        Replaces any NaNs or infs with zeros to avoid crashing the RL agent.
-        """
         obs_window = self.price_df.iloc[self.current_step - self.window_size : self.current_step]
         obs = obs_window.values
-
         if not np.all(np.isfinite(obs)):
             if self.verbose:
-                print(f"[Warning] NaNs/Infs detected in observation at step {self.current_step}. Replacing with 0s.")
+                print(f"[Warning] Invalid obs at step {self.current_step}. Replacing with 0s.")
             obs = np.nan_to_num(obs)
-
         return obs
 
     def render(self, mode="human"):
-        """
-        Display the current state of the environment.
-        """
         print(f"Step: {self.current_step} | Portfolio Value: ${self.portfolio_value:,.2f}")
+
+    def compute_reward(self, returns, weights):
+        raise NotImplementedError("Subclasses must implement reward logic.")
