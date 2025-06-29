@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2025-06-29
+### Added
+- Refactored `BasePortfolioEnv` into a fully modular, doctrine-agnostic base class.
+  - Introduced abstract `compute_reward()` method to enforce subclass responsibility for reward calculation.
+  - Added `seed()` method for reproducibility and consistent training behavior.
+  - Incorporated support for:
+    - Per-asset weight caps (`max_weight_per_asset`)
+    - Drawdown-aware episode control (`allow_drawdown_recovery`)
+    - Step count-based termination (`max_episode_length`)
+    - Volatility- and history-based reward tracking (`recent_returns`, `portfolio_history`)
+  - Portfolio return clipping and invalid weight handling for increased training stability.
+
+- Rewrote `train_agent.py` with CLI arguments for model tagging, rolling window size, and reward doctrine selection.
+  - Automatically selects doctrinal environment (Log, Sharpe, Drawdown) based on input args.
+  - Training config is fully user-driven; no manual script edits required.
+
+- Rewrote `test_agent.py` to mirror CLI flexibility and doctrinal automation.
+  - Auto-loads most recent model matching the `--tag`
+  - Accurately reconstructs portfolio trajectory and cumulative returns.
+  - Saves evaluation results as tagged `.npy` files under `evaluation/`.
+
+### Changed
+- `BasePortfolioEnv` can no longer be trained or evaluated directly.
+  - All agents must subclass with a doctrine which implements `compute_reward()`.
+
+### Notes
+- LogReturn, SharpeReward, and DrawdownPenalty doctrines are still under construction and may fail to produce positive alpha.
+- Execution-aware doctrine variants exist but are not yet validated and excluded from core training/evaluation workflows.
+- Rolling window size and test episode length are now fully dynamic and user-defined.
+
+### Next
+- Improve doctrine reward functions to achieve consistent alpha across historical test data.
+  - **LogReturnEnv**: Improve reward shaping for compounding and positive skew.
+  - **SharpeRewardEnv**: Fine-tune reward stability over rolling windows.
+  - **DrawdownPenaltyEnv**: Balance capital preservation with upside growth incentives.
+- Integrate slippage and transaction cost modeling into stable execution-aware training pipelines.
+- Add doctrine-level evaluation metrics and benchmarking scripts.
+
+
 ## [0.3.0] - 2025-06-28
 ### Added
 - Implemented portfolio_env_log_returns.py, portfolio_env_sharpe_ratio.py, and portfolio_env_drawdown.py to introduce rudimentary `LogReturnEnv`, `SharpeRewardEnv`, and `DrawdownPenaltyEnv` doctrine classes which inherit from `BasePortfolioEnv`class.
