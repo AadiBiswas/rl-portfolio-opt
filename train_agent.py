@@ -1,24 +1,70 @@
+# === train_agent.py ===
+"""
+Commands to train per doctrine:
+
+python train_agent.py --tag run_log_return --window 30 --reward_type log 
+python train_agent.py --tag run_sharpe --window 30 --reward_type sharpe
+python train_agent.py --tag run_drawdown --window 30 --reward_type drawdown
+
+Adjust window size as desired, e.g. --window 60 for 60-day rolling window.
+"""
+
 import os
-import sys 
+import sys
+import argparse
 import pandas as pd
 import numpy as np
-
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-
-from portfolio_env import PortfolioEnv
+from datetime import datetime
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv
 
-# 1. Load data
-DATA_PATH = os.path.join("data", "daily_returns.csv")
-returns_df = pd.read_csv(DATA_PATH, index_col=0, parse_dates=True)
+# Add 'src' folder to import path
+sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
-# 2. Instantiate environment
+# === Parse CLI arguments ===
+parser = argparse.ArgumentParser(description="Train PPO agent for portfolio optimization.")
+parser.add_argument("--tag", type=str, default="default", help="Custom tag to name the saved model.")
+parser.add_argument("--window", type=int, default=30, help="Rolling window size in the environment.")
+parser.add_argument("--reward_type", type=str, default="log", choices=["log", "sharpe", "drawdown"],
+                    help="Reward doctrine to use during training.")
+parser.add_argument("--execution_aware", action="store_true",
+                    help="Use execution-aware environment with slippage and transaction cost.")
+args = parser.parse_args()
+
+# === Dynamic reward environment import ===
+if args.reward_type == "log":
+    if args.execution_aware:
+        from portfolio_env_execution_log_return import PortfolioEnv
+    else:
+        from portfolio_env_log_return import PortfolioEnv
+elif args.reward_type == "sharpe":
+    if args.execution_aware:
+        from portfolio_env_execution_sharpe_ratio import PortfolioEnv
+    else:
+        from portfolio_env_sharpe_ratio import PortfolioEnv
+elif args.reward_type == "drawdown":
+    if args.execution_aware:
+        from portfolio_env_execution_drawdown import PortfolioEnv
+    else:
+        from portfolio_env_drawdown import PortfolioEnv
+else:
+    raise ValueError(f"Unsupported reward type: {args.reward_type}")
+
+# === Load dataset ===
+DATA_PATH = os.path.join("data", "daily_prices.csv")
+prices_df = pd.read_csv(DATA_PATH, index_col=0, parse_dates=True)
+assert (prices_df > 0).all().all(), "Non-positive price found. Check input CSV."
+
+# === Set seed for reproducibility ===
+np.random.seed(42)
+os.environ['PYTHONHASHSEED'] = str(42)
+
+# === Create Gym environment ===
 env = DummyVecEnv([
-    lambda: PortfolioEnv(price_df=returns_df, window_size=30, verbose=False)
+    lambda: PortfolioEnv(price_df=prices_df, window_size=args.window, verbose=True)
 ])
 
-# 3. Instantiate agent
+# === Initialize PPO agent ===
 model = PPO(
     policy="MlpPolicy",
     env=env,
@@ -27,16 +73,29 @@ model = PPO(
     batch_size=64,
     gae_lambda=0.95,
     gamma=0.99,
-    ent_coef=0.0,
+    ent_coef=0.005,
     learning_rate=3e-4,
     clip_range=0.2,
     n_epochs=10,
+    seed=42
 )
 
-# 4. Train agent
-model.learn(total_timesteps=100_000)
+# === Train the agent ===
 
-# 5. Save model
+"""
+Modify how many steps you want to train for: 10-50k is good for testing.
+At 100k-ish steps, you're at risk of overtraining
+overtraining risks: overfitting, hyperaggression, portfolio vals spiking during training but collapsing during eval
+"""
+
+print(f"Training model with tag: {args.tag}")
+model.learn(total_timesteps=10_000)
+
+# === Save the model ===
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+model_name = f"ppo_portfolio_{args.tag}_{timestamp}"
+save_path = os.path.join("models", model_name)
+
 os.makedirs("models", exist_ok=True)
-model.save("models/ppo_portfolio")
-print("Model saved to models/ppo_portfolio.zip")
+model.save(save_path)
+print(f"Model saved to {save_path}.zip")
