@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.1] - 2025-06-30
+
+### Changed
+- **LogReturnEnv**: Improved reward shaping to reflect short-term volatility and long-term performance targets.
+  - Added rolling volatility-aware scaling to dynamically adjust reward magnitude.
+  - Introduced gain bonus for surpassing previous portfolio highs.
+  - Implemented clipping and safety checks to handle numerical edge cases.
+  - Updated docstring and added debug logging to support interpretability.
+
+- **SharpeRewardEnv**: Enhanced stability and episodic behavior for risk-adjusted learning.
+  - Switched to `deque` for efficient rolling return tracking.
+  - Added return and reward clipping to prevent unstable reward spikes.
+  - Improved numerical stability via checks for NaNs, infs, and low standard deviation.
+  - Added `reset()` method to clear return history between episodes.
+  - Expanded docstring and verbosity-controlled debug logging.
+
+- **DrawdownPenaltyEnv**: Rebuilt reward function to balance growth, risk, and recovery incentives.
+  - Replaced simple penalized return with composite reward: log return, Sharpe bonus, drawdown penalty, and gain bonus.
+  - Dynamically adjusted reward weights based on drawdown severity and portfolio volatility.
+  - Applied clipping and validity checks for reward stability.
+  - Added recovery bonus to incentivize breakout above historical highs.
+  - Enhanced documentation and debug output.
+
+### Notes
+- All three doctrine environments now produce **positive cumulative returns** over historical test data.
+- **SharpeRewardEnv** and **DrawdownPenaltyEnv** have begun to demonstrate **positive alpha**, offering improved consistency and risk-adjusted growth relative to benchmarks.
+- These reward formulations are now more aligned with their respective design principles:  
+  - **LogReturn** → compounding and volatility-awareness  
+  - **Sharpe** → consistency and variance control  
+  - **Drawdown** → resilience and capital preservation
+
+### Next
+- Refine **LogReturnEnv** to not only achieve positive returns, but also demonstrate sustained **positive alpha**.
+- Begin development of **execution-aware doctrine variants**, incorporating:
+  - Slippage modeling
+  - Transaction cost penalties
+  - Execution-aware state features and reward shaping
+- Extend the base environment to support these execution-aware components modularly.
+
+
 ## [0.4.0] - 2025-06-29
 ### Added
 - Refactored `BasePortfolioEnv` into a fully modular, doctrine-agnostic base class.
@@ -118,7 +158,7 @@ All notable changes to this project will be documented in this file.
 - This environment forms the **core control logic** of the project: all reward variants build on this common simulation engine.
 - Designed for clarity, reproducibility, and extensibility, enabling clean experimentation with alternative risk-reward tradeoffs in portfolio optimization.
 
-### Next?
+### Next
 - Integrate `BasePortfolioEnv` into a unified registry system
 - Add unit tests for `BasePortfolioEnv` simulation and reward delegation
 
@@ -131,6 +171,6 @@ All notable changes to this project will be documented in this file.
 - Plotted cumulative returns and correlation heatmap
 - Saved cleaned data (close prices & daily returns) to `data/` as CSVs
 
-### [Next]
+### Next
 - Build custom OpenAI Gym-compatible trading environment
 - Implement reward logic and market step simulation
