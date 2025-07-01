@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] - 2025-07-01
+
+### Added
+- **ExecutionAwarePortfolioEnv**: New base class extending `BasePortfolioEnv` to support realistic market conditions.
+  - Incorporates slippage and transaction cost modeling via per-step weight deltas.
+  - Computes execution-adjusted net returns to replace raw portfolio return in reward logic.
+  - Fully modular and backwards-compatible with existing doctrine subclasses.
+
+- **Execution-aware LogReturnEnv**: Variant of `LogReturnEnv` that accounts for execution costs.
+  - Accepts net return input adjusted for slippage and transaction cost.
+  - Retains volatility-aware scaling, gain bonus, and reward clipping.
+  - Structurally mirrors base LogReturnEnv but derives from `ExecutionAwarePortfolioEnv`.
+
+- **Execution-aware SharpeRewardEnv**: Cost-aware variant of Sharpe reward formulation.
+  - Computes rolling Sharpe-style ratio over net returns.
+  - Maintains reward clipping and numerical stability features.
+  - Uses a deque-based rolling window for consistent tracking of adjusted return distributions.
+
+- **Execution-aware DrawdownPenaltyEnv**: Execution-aware version of drawdown-sensitive doctrine.
+  - Applies log return, Sharpe bonus, and drawdown penalty using net return input.
+  - Preserves recovery bonus logic and dynamic reward weighting based on drawdown severity.
+  - Aligns structure and reward formulation with its non-execution-aware counterpart.
+
+### Notes
+- Execution-aware doctrines now fully implemented and modularized.
+- **Execution-aware LogReturnEnv** is currently producing **negative alpha** under slippage—requires further tuning.
+- Doctrines are run **independently** and not hybridized (e.g., no Sharpe bonus inside LogReturn or vice versa).
+- Execution modeling is structurally sound and fully integrated but still undergoing reward-tuning optimization.
+
+### Next
+- **LogReturnEnv**: Introduce optional Sharpe-style consistency bonus to improve long-term stability.
+- **SharpeRewardEnv**: Add volatility-aware dynamic weighting (from DrawdownPenaltyEnv) to sharpen reward shaping.
+- **Execution-aware LogReturnEnv**: Tune reward structure to overcome negative alpha under transaction friction.
+- Explore **hybrid doctrine variants** blending risk-adjusted growth with capital preservation features.
+
+
 ## [0.4.1] - 2025-06-30
 
 ### Changed
