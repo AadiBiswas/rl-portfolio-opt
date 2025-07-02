@@ -46,6 +46,21 @@ class SharpeRewardExecutionEnv(ExecutionAwarePortfolioEnv):
             return 0.0
 
         sharpe_like = mean / std
+
+        # === Optional: Volatility-aware dynamic weighting (commented out) ===
+        # if std < 0.01:
+        #     weight = 1.2
+        # elif std < 0.02:
+        #     weight = 1.0
+        # else:
+        #     weight = 0.7
+        # sharpe_like *= weight
+
+        # === Optional: Gain penalty (commented out) ===
+        # if r > 0.05:
+        #     penalty = 0.02 * np.log1p(r)
+        #     sharpe_like -= penalty
+
         clipped_reward = np.clip(sharpe_like, -10.0, 10.0)
 
         if self.verbose and sharpe_like != clipped_reward:
