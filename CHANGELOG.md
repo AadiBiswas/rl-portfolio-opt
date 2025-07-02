@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.1] - 2025-07-02
+
+### Added
+- **Optional enhancements to LogReturnEnv**:
+  - Sharpe-style consistency bonus to encourage stable return patterns over time.
+  - Training-aware exponential decay to dampen late-stage reward inflation and reduce overfitting.
+  - Both features are commented out by default to preserve the “pure” log return doctrine but are documented for advanced users.
+
+- **Optional enhancements to execution-aware LogReturnExecutionEnv**:
+  - Sharpe-style consistency bonus and training-aware decay mirrored from the base LogReturnEnv.
+  - Extends doctrinal flexibility to environments modeling slippage and transaction costs.
+  - Remain commented out to maintain clean separation of concerns.
+
+  - **Optional Volatility-aware dynamic weighting for SharpeRewardEnv**:
+  - Adds optional scaling of Sharpe reward based on recent return volatility.
+  - Helps stabilize reward signals in low-volatility regimes or suppress excessive spikes in high-volatility environments.
+  - Code is commented by default for safe baseline behavior.
+
+- **Optional Volatility-aware weighting in execution-aware SharpeRewardExecutionEnv**:
+  - Optional reward modulation based on rolling standard deviation of net returns.
+  - Designed to reduce instability in execution-aware training runs.
+  - Fully optional and disabled by default.
+
+### Notes
+- All new reward shaping logic is **commented by default**, offering toggles for more advanced or robust agent training strategies.
+- Enhancements mirror across both base and execution-aware doctrines for consistency.
+- This update sets the groundwork for upcoming dynamic doctrine switching and more nuanced reward control.
+
+### Next
+- Implement **dynamic doctrine switching** to more realistically simulate shifts in trading regimes or model selection strategies.
+- Tune reward function of **LogReturnExecutionEnv**, which currently shows negative alpha under slippage and transaction cost.
+- Begin validating hybrid reward schemes combining return, risk, and drawdown sensitivity under realistic execution conditions.
+
+
 ## [0.5.0] - 2025-07-01
 
 ### Added
