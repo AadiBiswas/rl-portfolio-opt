@@ -48,6 +48,23 @@ class SharpeRewardEnv(BasePortfolioEnv):
 
         sharpe_like = mean / std
 
+        # === Optional: Volatility-aware dynamic weighting (might dampen model, but good insurance) ===
+        # Boost reward in stable environments (low std)
+        # if std < 0.01:
+        #     weight = 1.2
+        # elif std < 0.02:
+        #     weight = 1.0
+        # else:
+        #     weight = 0.7
+        # sharpe_like *= weight  # === Amplified & stabilized Sharpe ===
+
+        # === Optional: Gain penalty to discourage unrealistic spikes  (might dampen model, but good insurance)  ===
+        # if r > 0.05:
+        #     penalty = 0.02 * np.log1p(r)
+        #     sharpe_like -= penalty
+        #     if self.verbose:
+        #         print(f"[Debug] Gain penalty applied: {penalty:.6f}")
+
         clipped_reward = np.clip(sharpe_like, -10.0, 10.0)
 
         if self.verbose and sharpe_like != clipped_reward:
