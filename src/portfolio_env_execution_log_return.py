@@ -4,9 +4,11 @@ from collections import deque
 
 class LogReturnEnv(ExecutionAwarePortfolioEnv):
     """
-    Reward = adaptive log return + gain bonus
+    Reward = adaptive log return + Sharpe-style bonus (commented out) + gain bonus
     - Dynamically scales based on volatility context
+    - Encourages consistent returns via Sharpe-style term (Optional, commented out)
     - Rewards surpassing prior portfolio highs 
+    - Dampens over time to reduce overtraining artifacts (Optional, commented out)
     - Execution-aware: accounts for slippage and transaction costs in portfolio return
     """
     def __init__(self, *args, **kwargs):
@@ -43,6 +45,20 @@ class LogReturnEnv(ExecutionAwarePortfolioEnv):
 
         reward = log_r * scale
 
+        
+        # === Sharpe-style consistency bonus ===
+        """"
+        Good to include, but commenting this to preserve "pure" log return doctrine
+        sharpe_bonus = 0.0
+        if len(self.recent_returns) >= self.vol_window:
+            mean_return = np.mean(self.recent_returns)
+            sharpe = mean_return / (std_dev + 1e-6)
+            sharpe_bonus = 0.03 * sharpe  # dampened
+            reward += sharpe_bonus
+            if self.verbose:
+                print(f"[Debug] Sharpe-style bonus: {sharpe_bonus:.6f}")
+        """
+
         # === Gain bonus for new highs ===
         projected_value = self.portfolio_value * (1 + r)
         gain_bonus = 0.0
@@ -52,6 +68,10 @@ class LogReturnEnv(ExecutionAwarePortfolioEnv):
             reward += gain_bonus
             if self.verbose:
                 print(f"[Debug] Gain bonus applied: {gain_bonus:.6f}")
+
+        # === Training-aware decay (optional) ===
+        # decay = 0.995 ** self.steps_elapsed  # exponential decay over steps
+        # reward *= decay  # === Dampens late-stage reward inflation ===
 
         # === Final clipping ===
         clipped_reward = np.clip(reward, -10.0, 10.0)
