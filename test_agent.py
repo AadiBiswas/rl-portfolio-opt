@@ -2,9 +2,15 @@
 """
 Commands to test per doctrine:
 
+ORIGINAL:
 python test_agent.py --tag run_log_return --window 30 --length 365 --reward_type log 
 python test_agent.py --tag run_sharpe --window 30 --length 365 --reward_type sharpe
 python test_agent.py --tag run_drawdown --window 30 --length 365 --reward_type drawdown
+
+EXECUTION AWARE (slippage + transaction cost):
+python test_agent.py --tag run_log_exec --window 30 --length 365 --reward_type log --execution_aware
+python test_agent.py --tag run_sharpe_exec --window 30 --length 365 --reward_type sharpe --execution_aware
+python test_agent.py --tag run_drawdown_exec --window 30 --length 365 --reward_type drawdown --execution_aware
 
 Ensure window size matches training config, e.g. --window 30 for 30-day rolling window.
 Adjust test length as desired, e.g. --length 365 for 1 year of evaluation.
