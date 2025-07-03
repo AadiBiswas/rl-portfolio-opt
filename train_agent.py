@@ -2,9 +2,15 @@
 """
 Commands to train per doctrine:
 
+ORIGINAL:
 python train_agent.py --tag run_log_return --window 30 --reward_type log 
 python train_agent.py --tag run_sharpe --window 30 --reward_type sharpe
 python train_agent.py --tag run_drawdown --window 30 --reward_type drawdown
+
+EXECUTION AWARE (slippage + transaction cost):
+python train_agent.py --tag run_log_exec --window 30 --reward_type log --execution_aware
+python train_agent.py --tag run_sharpe_exec --window 30 --reward_type sharpe --execution_aware
+python train_agent.py --tag run_drawdown_exec --window 30 --reward_type drawdown --execution_aware
 
 Adjust window size as desired, e.g. --window 60 for 60-day rolling window.
 """
