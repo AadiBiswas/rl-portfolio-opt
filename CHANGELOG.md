@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.2] - 2025-07-03
+
+### Added
+- **Execution-aware CLI integration for `train_agent.py` and `test_agent.py`**:
+  - Added `--execution_aware` flag to both scripts
+- **Updated README instructions to account for execution aware doctrines**: 
+
+### Notes
+- Nil; Minor update
+
+### Next
+- Same as previous
+
 ## [0.5.1] - 2025-07-02
 
 ### Added
