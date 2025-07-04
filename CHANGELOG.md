@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0] - 2025-07-04
+
+### Added
+- **CompositeEnv** (`portfolio_env_composite.py`):
+  - Introduces multi-doctrine training using a shared reward interface blending log return, Sharpe ratio, and drawdown penalty.
+  - Maintains doctrinal modularity by calling each doctrine's `compute_reward` method individually.
+
+- **Execution-aware CompositeEnv** (`portfolio_env_composite_execution.py`):
+  - Extends `CompositeEnv` to support realistic market conditions, incorporating slippage and transaction cost penalties.
+  - Enables doctrine blending under execution-aware constraints, preserving doctrine purity while introducing cost realism.
+
+- **DynamicDoctrineCallback** (`dynamic_doctrine_callback.py`):
+  - Enables real-time reward doctrine switching during training based on rolling Sharpe ratio performance.
+  - Evaluates agent performance every N steps, selecting the doctrine that maximizes risk-adjusted reward.
+  - Fully plug-and-play with both execution-aware and standard CompositeEnvs.
+
+### Changed
+- **LogReturnExecutionEnv**:
+  - Reward structure tuned to approximate break-even returns under slippage and transaction cost conditions.
+  - Gain bonuses and Sharpe-style consistency modifiers remain commented to preserve doctrinal integrity.
+  - Due to high execution drag and the absence of variance-based shaping, alpha remains difficult to achieve under this reward scheme.
+
+### Notes
+- Composite and dynamic doctrine systems represent a foundational step toward regime-switching, multi-objective reinforcement learning.
+- All environments preserve reward purity by keeping bonuses or hybridization logic **commented** or **isolated**.
+- Dynamic switching logic currently operates via `Callback`; support for full environment-embedded switching may follow.
+
+### Next
+- Refactor `train_agent.py` and `test_agent.py` to support `DynamicDoctrineCallback` with minimal user effort.
+- Explore weighted doctrine blending and longer performance windows for smoother regime transitions.
+- Begin hyperparameter tuning under dynamic reward conditions to assess overfitting risks and recovery robustness.
+
 ## [0.5.2] - 2025-07-03
 
 ### Added
