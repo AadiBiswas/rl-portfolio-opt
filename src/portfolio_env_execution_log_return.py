@@ -2,7 +2,7 @@ from portfolio_env_execution import ExecutionAwarePortfolioEnv
 import numpy as np
 from collections import deque
 
-class LogReturnEnv(ExecutionAwarePortfolioEnv):
+class LogReturnExecutionEnv(ExecutionAwarePortfolioEnv):
     """
     Reward = adaptive log return + Sharpe-style bonus (commented out) + gain bonus
     - Dynamically scales based on volatility context
@@ -64,7 +64,7 @@ class LogReturnEnv(ExecutionAwarePortfolioEnv):
         gain_bonus = 0.0
         if projected_value > self.max_portfolio_value:
             rel_gain = (projected_value - self.max_portfolio_value) / (self.max_portfolio_value + 1e-8)
-            gain_bonus = 0.20 * np.log1p(rel_gain)
+            gain_bonus = 0.30 * np.log1p(rel_gain) # Aggressive for simulation purposes. IRL this would be ~0.2-0.25
             reward += gain_bonus
             if self.verbose:
                 print(f"[Debug] Gain bonus applied: {gain_bonus:.6f}")
@@ -81,4 +81,4 @@ class LogReturnEnv(ExecutionAwarePortfolioEnv):
         return clipped_reward
 
 # Alias for external import
-PortfolioEnv = LogReturnEnv
+PortfolioEnv = LogReturnExecutionEnv
