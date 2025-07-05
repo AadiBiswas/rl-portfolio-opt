@@ -6,11 +6,13 @@ ORIGINAL:
 python test_agent.py --tag run_log_return --window 30 --length 365 --reward_type log 
 python test_agent.py --tag run_sharpe --window 30 --length 365 --reward_type sharpe
 python test_agent.py --tag run_drawdown --window 30 --length 365 --reward_type drawdown
+python test_agent.py --tag run_composite --window 30 --length 365 --reward_type composite
 
 EXECUTION AWARE (slippage + transaction cost):
 python test_agent.py --tag run_log_exec --window 30 --length 365 --reward_type log --execution_aware
 python test_agent.py --tag run_sharpe_exec --window 30 --length 365 --reward_type sharpe --execution_aware
 python test_agent.py --tag run_drawdown_exec --window 30 --length 365 --reward_type drawdown --execution_aware
+python test_agent.py --tag run_composite_exec --window 30 --length 365 --reward_type composite --execution_aware
 
 Ensure window size matches training config, e.g. --window 30 for 30-day rolling window.
 Adjust test length as desired, e.g. --length 365 for 1 year of evaluation.
@@ -29,7 +31,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--tag", type=str, required=True, help="Run tag used during training")
 parser.add_argument("--window", type=int, default=30, help="Rolling window size used during training")
 parser.add_argument("--length", type=int, default=None, help="Optional max number of steps during evaluation")
-parser.add_argument("--reward_type", type=str, default="log", choices=["log", "sharpe", "drawdown"],
+parser.add_argument("--reward_type", type=str, default="log", choices=["log", "sharpe", "drawdown", "composite"],
                     help="Reward type used during training (affects how portfolio value is calculated)")
 parser.add_argument("--execution_aware", action="store_true",
                     help="Use execution-aware environment with slippage and transaction costs")
@@ -54,6 +56,11 @@ elif args.reward_type == "drawdown":
         from portfolio_env_execution_drawdown import PortfolioEnv
     else:
         from portfolio_env_drawdown import PortfolioEnv
+elif args.reward_type == "composite":
+    if args.execution_aware:
+        from portfolio_env_execution_composite import CompositeExecutionAwareEnv as PortfolioEnv
+    else:
+        from portfolio_env_composite import CompositeEnv as PortfolioEnv
 else:
     raise ValueError(f"Unsupported reward type: {args.reward_type}")
 
@@ -92,7 +99,7 @@ while not done and (args.length is None or step_count < args.length):
     obs, reward, done, info = env.step(action)
     total_reward += reward[0]
 
-    if args.reward_type == "sharpe":
+    if args.reward_type == "sharpe" or args.reward_type == "composite":
         # Use actual portfolio value from env info dict
         current_value = info[0]["portfolio_value"] if isinstance(info, list) else info["portfolio_value"]
     else:
