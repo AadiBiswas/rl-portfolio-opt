@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.1] - 2025-07-04
+
+### Enhanced
+- **train_agent.py**:
+  - Updated doctrinal import logic to support `CompositeEnv` and `CompositeExecutionEnv` through CLI.
+  - Allows unified training runs across multiple reward formulations (log, sharpe, drawdown).
+  - Execution-aware support preserved via `--execution_aware` flag.
+  - Added CLI documentation and training command examples to reflect new doctrine type.
+
+- **test_agent.py**:
+  - Added support for evaluating agents trained under composite doctrines.
+  - Maintains proper handling for execution-aware variants and internal reward shaping consistency.
+  - Extends evaluation logic without disrupting backwards compatibility with legacy environments.
+
+### Notes
+- This update brings full CLI compatibility for hybrid doctrine experimentation.
+- Composite environments now behave like first-class citizens in both training and testing workflows.
+
+### Next
+- Begin live testing of `CompositeEnv` and `DynamicDoctrineCallback`, hyperparameter tuning under dynamic reward conditions to assess overfitting risks and recovery robustness.
+- Add plotting + analytics scripts to visualize doctrine-switching behavior and reward component breakdowns.
+
 ## [0.6.0] - 2025-07-04
 
 ### Added
