@@ -6,11 +6,13 @@ ORIGINAL:
 python train_agent.py --tag run_log_return --window 30 --reward_type log 
 python train_agent.py --tag run_sharpe --window 30 --reward_type sharpe
 python train_agent.py --tag run_drawdown --window 30 --reward_type drawdown
+python train_agent.py --tag run_composite --window 30 --reward_type composite
 
 EXECUTION AWARE (slippage + transaction cost):
 python train_agent.py --tag run_log_exec --window 30 --reward_type log --execution_aware
 python train_agent.py --tag run_sharpe_exec --window 30 --reward_type sharpe --execution_aware
 python train_agent.py --tag run_drawdown_exec --window 30 --reward_type drawdown --execution_aware
+python train_agent.py --tag run_composite_exec --window 30 --reward_type composite --execution_aware
 
 Adjust window size as desired, e.g. --window 60 for 60-day rolling window.
 """
@@ -23,6 +25,7 @@ import numpy as np
 from datetime import datetime
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common.callbacks import CallbackList
 
 # Add 'src' folder to import path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
@@ -31,7 +34,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 parser = argparse.ArgumentParser(description="Train PPO agent for portfolio optimization.")
 parser.add_argument("--tag", type=str, default="default", help="Custom tag to name the saved model.")
 parser.add_argument("--window", type=int, default=30, help="Rolling window size in the environment.")
-parser.add_argument("--reward_type", type=str, default="log", choices=["log", "sharpe", "drawdown"],
+parser.add_argument("--reward_type", type=str, default="log", choices=["log", "sharpe", "drawdown", "composite"],
                     help="Reward doctrine to use during training.")
 parser.add_argument("--execution_aware", action="store_true",
                     help="Use execution-aware environment with slippage and transaction cost.")
@@ -53,6 +56,12 @@ elif args.reward_type == "drawdown":
         from portfolio_env_execution_drawdown import PortfolioEnv
     else:
         from portfolio_env_drawdown import PortfolioEnv
+elif args.reward_type == "composite":
+    if args.execution_aware:
+        from portfolio_env_execution_composite import CompositeExecutionAwareEnv as PortfolioEnv
+    else:
+        from portfolio_env_composite import CompositeEnv as PortfolioEnv
+    from dynamic_doctrine_callback import DynamicDoctrineSwitchCallback
 else:
     raise ValueError(f"Unsupported reward type: {args.reward_type}")
 
@@ -95,7 +104,12 @@ overtraining risks: overfitting, hyperaggression, portfolio vals spiking during 
 """
 
 print(f"Training model with tag: {args.tag}")
-model.learn(total_timesteps=10_000)
+
+if args.reward_type == "composite":
+    callback = DynamicDoctrineSwitchCallback(switch_interval=1500, verbose=True)
+    model.learn(total_timesteps=10_000, callback=callback)
+else:
+    model.learn(total_timesteps=10_000)
 
 # === Save the model ===
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
