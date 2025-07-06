@@ -1,5 +1,4 @@
 # === portfolio_env_composite.py ===
-
 import gym
 import numpy as np
 from portfolio_env_log_return import LogReturnEnv
@@ -10,14 +9,18 @@ class CompositeEnv(gym.Env):
     """
     Composite non-execution-aware environment that dynamically switches between
     log return, Sharpe ratio, and drawdown doctrines at runtime.
+    Accepts `max_episode_length` and passes it to each underlying doctrine.
     """
-    def __init__(self, price_df, window_size=30, verbose=False):
+    def __init__(self, price_df, window_size=30, verbose=False, max_episode_length=None):
         super().__init__()
         self.verbose = verbose
         self.envs = {
-            "log": LogReturnEnv(price_df=price_df, window_size=window_size, verbose=verbose),
-            "sharpe": SharpeRewardEnv(price_df=price_df, window_size=window_size, verbose=verbose),
-            "drawdown": DrawdownPenaltyEnv(price_df=price_df, window_size=window_size, verbose=verbose)
+            "log": LogReturnEnv(price_df=price_df, window_size=window_size,
+                                verbose=verbose, max_episode_length=max_episode_length),
+            "sharpe": SharpeRewardEnv(price_df=price_df, window_size=window_size,
+                                      verbose=verbose, max_episode_length=max_episode_length),
+            "drawdown": DrawdownPenaltyEnv(price_df=price_df, window_size=window_size,
+                                           verbose=verbose, max_episode_length=max_episode_length)
         }
         self.current_env = self.envs["log"]  # default
 
