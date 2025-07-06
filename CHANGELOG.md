@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.2] - 2025-07-04
+
+### Fixed
+- **train_agent.py**:
+  - Corrected doctrinal import paths for `CompositeEnv` and `CompositeExecutionEnv`.
+  - Aligned all CLI-triggered reward environments to internal environment aliases.
+
+- **test_agent.py**:
+  - Synchronized import logic with training script for smooth evaluation of composite doctrines.
+  - Resolved execution-aware composite test failures caused by misaligned naming conventions.
+
+- **dynamic_doctrine_callback.py**:
+  - Repaired constructor signature and improved reliability of runtime switching logic.
+  - Added verbose logging for runtime doctrine transitions to enhance debug visibility.
+
+### Enhanced
+- **portfolio_env_composite.py**:
+  - Added `max_episode_length` argument support.
+  - Propagated time limit across all doctrine sub-environments.
+  - Fixed `step()` compatibility with `test_agent.py` and `DummyVecEnv`.
+
+- **portfolio_env_execution_composite.py**:
+  - Same enhancements as non-execution-aware version.
+  - Additionally fixed import handling by aligning internal aliases with doctrinal class structure.
+  - Ensures compatibility with CLI training/testing pipelines.
+
+### Notes
+- Composite (non-execution) achieves **+2.8% cumulative return** over 10k steps using dynamic switching across log, Sharpe, and drawdown doctrines.
+- Execution-aware Composite currently yields **-6.4% return**, due to realistic slippage and transaction costs compounding negative alpha in log-return regimes. 
+- Doctrine purity has been preserved in both environments by isolating or commenting all cross-doctrinal bonuses (e.g., Sharpe-style consistency in LogReturn).
+
+### Next
+- Improve **alpha generation** under both composite environments, especially execution-aware variants, given that this framework most accurately represents the dynamic doctrine adjustment used by quantitative traders.
+- Add **visualization tools** to plot reward trajectory, doctrine-switch frequency, and return decomposition over time.
+- Explore **doctrine-weight blending** (instead of hard switches), and reward smoothing strategies for more realistic trading simulations.
+
+
 ## [0.6.1] - 2025-07-04
 
 ### Enhanced
