@@ -58,7 +58,7 @@ elif args.reward_type == "drawdown":
         from portfolio_env_drawdown import PortfolioEnv
 elif args.reward_type == "composite":
     if args.execution_aware:
-        from portfolio_env_execution_composite import CompositeExecutionAwareEnv as PortfolioEnv
+        from portfolio_env_composite_execution import ExecutionAwareCompositeEnv as PortfolioEnv
     else:
         from portfolio_env_composite import CompositeEnv as PortfolioEnv
     from dynamic_doctrine_callback import DynamicDoctrineSwitchCallback
