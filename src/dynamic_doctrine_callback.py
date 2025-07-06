@@ -5,10 +5,14 @@ from stable_baselines3.common.callbacks import BaseCallback
 class DynamicDoctrineSwitchCallback(BaseCallback):
     """
     Custom callback to dynamically switch reward doctrines based on portfolio performance.
+    
+    Args:
+        switch_interval (int): Number of steps between doctrine evaluations.
+        verbose (int): Verbosity level (0 = silent, 1+ = log changes).
     """
-    def __init__(self, eval_freq=1000, verbose=0):
+    def __init__(self, switch_interval=1000, verbose=0):
         super().__init__(verbose)
-        self.eval_freq = eval_freq
+        self.eval_freq = switch_interval
         self.performance_window = []
         self.current_doctrine = "log"
 
@@ -41,6 +45,8 @@ class DynamicDoctrineSwitchCallback(BaseCallback):
 
             if new_doctrine != self.current_doctrine:
                 env.switch_doctrine(new_doctrine)
+                if self.verbose:
+                    print(f"[Callback] Doctrine switched to: {new_doctrine.upper()} based on avg delta {avg_change:.2f}")
                 self.current_doctrine = new_doctrine
 
         return True
