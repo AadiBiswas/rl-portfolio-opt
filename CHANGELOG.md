@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.3] - 2025-07-05
+
+### Optimized
+- **SharpeRewardExecutionEnv**:
+  - Shortened Sharpe window from 20 to 10 steps for improved reactivity.
+  - Reward now multiplies Sharpe ratio by mean return, biasing toward consistent positive gain.
+  - Re-enabled volatility-aware weighting to modulate reward under different risk conditions.
+  - Preserves compatibility with execution-aware constraints and doctrine purity.
+
+- **LogReturnExecutionEnv**:
+  - Enabled previously-commented Sharpe-style bonus for return consistency.
+  - Tuned volatility scaling for better alpha under dynamic risk profiles.
+  - Calibrated gain bonus logic to better reward portfolio highs without causing reward spikes.
+  - Net effect: reward function now generates **positive alpha** even under slippage/transaction cost.
+
+### Notes
+- Execution-aware Composite doctrine performance has improved from **-6.4%** to **-4.7%** cumulative return across 10k steps.
+- These upgrades reflect our new focus on **doctrinal aggression**—since we now dynamically switch between log, Sharpe, and drawdown strategies, we can afford to be bolder within each.
+- Individual doctrines are being refined with alpha optimization in mind, while preserving modularity for future dynamic blending.
+
+### Next
+- Continue alpha optimization by:
+  - Making dynamic switching more sensitive, especially for mid-trend Sharpe activations.
+  - Further refining drawdown reward mechanics for deeper downside control.
+  - Experimenting with doctrine-weight blending and soft transitions instead of hard switches.
+
+- Begin implementation of:
+  - **Visualization tools** to chart doctrine-switch frequency, portfolio trajectory, and reward decomposition over time.
+
+
 ## [0.6.2] - 2025-07-04
 
 ### Fixed
