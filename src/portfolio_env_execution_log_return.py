@@ -1,14 +1,15 @@
+# === portfolio_env_execution_log_return.py ===
+
 from portfolio_env_execution import ExecutionAwarePortfolioEnv
 import numpy as np
 from collections import deque
 
 class LogReturnExecutionEnv(ExecutionAwarePortfolioEnv):
     """
-    Reward = adaptive log return + Sharpe-style bonus (commented out) + gain bonus
+    Reward = adaptive log return + Sharpe-style bonus + gain bonus
     - Dynamically scales based on volatility context
-    - Encourages consistent returns via Sharpe-style term (Optional, commented out)
+    - Encourages consistent returns via Sharpe-style term
     - Rewards surpassing prior portfolio highs 
-    - Dampens over time to reduce overtraining artifacts (Optional, commented out)
     - Execution-aware: accounts for slippage and transaction costs in portfolio return
     """
     def __init__(self, *args, **kwargs):
@@ -38,40 +39,32 @@ class LogReturnExecutionEnv(ExecutionAwarePortfolioEnv):
         self.recent_returns.append(r)
         if len(self.recent_returns) >= self.vol_window:
             std_dev = np.std(self.recent_returns)
-            scale = 0.4 if std_dev < 0.01 else 0.7 if std_dev < 0.02 else 1.0
+            scale = 0.6 if std_dev < 0.01 else 0.85 if std_dev < 0.02 else 1.0
         else:
             std_dev = 1.0
-            scale = 0.5
+            scale = 0.6
 
         reward = log_r * scale
 
-        
         # === Sharpe-style consistency bonus ===
-        """"
-        Good to include, but commenting this to preserve "pure" log return doctrine
         sharpe_bonus = 0.0
         if len(self.recent_returns) >= self.vol_window:
             mean_return = np.mean(self.recent_returns)
             sharpe = mean_return / (std_dev + 1e-6)
-            sharpe_bonus = 0.03 * sharpe  # dampened
+            sharpe_bonus = 0.05 * sharpe  # moderately tuned for alpha
             reward += sharpe_bonus
             if self.verbose:
                 print(f"[Debug] Sharpe-style bonus: {sharpe_bonus:.6f}")
-        """
 
         # === Gain bonus for new highs ===
         projected_value = self.portfolio_value * (1 + r)
         gain_bonus = 0.0
         if projected_value > self.max_portfolio_value:
             rel_gain = (projected_value - self.max_portfolio_value) / (self.max_portfolio_value + 1e-8)
-            gain_bonus = 0.30 * np.log1p(rel_gain) # Aggressive for simulation purposes. IRL this would be ~0.2-0.25
+            gain_bonus = 0.20 * np.log1p(rel_gain)  # slightly more conservative than before
             reward += gain_bonus
             if self.verbose:
                 print(f"[Debug] Gain bonus applied: {gain_bonus:.6f}")
-
-        # === Training-aware decay (optional) ===
-        # decay = 0.995 ** self.steps_elapsed  # exponential decay over steps
-        # reward *= decay  # === Dampens late-stage reward inflation ===
 
         # === Final clipping ===
         clipped_reward = np.clip(reward, -10.0, 10.0)
