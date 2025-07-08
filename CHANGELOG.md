@@ -2,7 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.6.4] - 2025-07-06
+## [1.0.0] - 2025-07-09
+
+### Added
+- Pushed latest, parametrically adjusted versions of all doctrine, training, and testing agents
+- Uploaded every model tested from this project's genesis
+  - **NOTE**: Most models, especially early ones, totally crash their portfolio values
+  - Only recent models (generated from updated doctrines) can yeild 20-25% alpha across 365-day testing window
+
+### Next Steps (Feel free to PR!)
+
+- Visualization elements
+- New independent doctrines
+- New dynamic doctrines
+
+## [0.6.4] - 2025-07-08
 
 ### Fixed
 - **DynamicDoctrineCallback**:
@@ -24,17 +38,16 @@ All notable changes to this project will be documented in this file.
 - We've explicitly avoided overfitting by limiting total training steps (10k per run), staying below overfitting thresholds observed in prior regimes.
 
 ### Next
-- Begin implementation of **visualization tools** to:
-  - Plot portfolio value trajectory and volatility across time
-  - Annotate doctrine-switching points
-  - Decompose reward components per doctrine
-
 - Optional next-stage enhancements:
-  - Add reward smoothing or soft doctrine blending
-  - Visual diagnostics for agent overfitting and alpha decay
+  - Begin implementation of **visualization tools** to:
+    - Plot portfolio value trajectory and volatility across time
+    - Annotate doctrine-switching points
+    - Decompose reward components per doctrine
+    - Add reward smoothing or soft doctrine blending
+    - Visually diagnose overfitting and alpha decay
 
 
-## [0.6.3] - 2025-07-05
+## [0.6.3] - 2025-07-07
 
 ### Optimized
 - **SharpeRewardExecutionEnv**:
@@ -64,7 +77,7 @@ All notable changes to this project will be documented in this file.
   - **Visualization tools** to chart doctrine-switch frequency, portfolio trajectory, and reward decomposition over time.
 
 
-## [0.6.2] - 2025-07-04
+## [0.6.2] - 2025-07-06
 
 ### Fixed
 - **train_agent.py**:
@@ -101,7 +114,7 @@ All notable changes to this project will be documented in this file.
 - Explore **doctrine-weight blending** (instead of hard switches), and reward smoothing strategies for more realistic trading simulations.
 
 
-## [0.6.1] - 2025-07-04
+## [0.6.1] - 2025-07-05
 
 ### Enhanced
 - **train_agent.py**:
