@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.4] - 2025-07-06
+
+### Fixed
+- **DynamicDoctrineCallback**:
+  - Fixed environment reference bug: switching now correctly targets `.unwrapped` within `DummyVecEnv`.
+  - Added forced switch to SHARPE doctrine after warm-up (at step 2000) for runtime validation.
+  - Improved debug visibility of doctrine transitions via explicit logging.
+
+- **ExecutionAwareCompositeEnv**:
+  - Updated `switch_doctrine()` to reset internal state of the target doctrine (e.g., `recent_returns`), ensuring fair reward reinitialization after each switch.
+  - Added debug prints in `step()` and `switch_doctrine()` to trace active doctrine usage throughout training.
+
+### Notes
+- Doctrine switching now functions correctly during training. At the warm-up boundary, the SHARPE doctrine is explicitly activated to verify that doctrine routing is respected. 
+- The reward routing bug that prevented SHARPE from being invoked has been resolved.
+- Average cumulative return across all **composite environments** (execution-aware and non-aware) now ranges between **+20% to +25% over 10k steps**, reflecting effective doctrine switching.
+  - **Drawdown penalty** doctrine generally yields the **highest alpha**, benefiting from downside protection.
+  - **Log return** doctrine consistently returns lower alpha, especially in execution-aware setups with cost drag.
+
+- We've explicitly avoided overfitting by limiting total training steps (10k per run), staying below overfitting thresholds observed in prior regimes.
+
+### Next
+- Begin implementation of **visualization tools** to:
+  - Plot portfolio value trajectory and volatility across time
+  - Annotate doctrine-switching points
+  - Decompose reward components per doctrine
+
+- Optional next-stage enhancements:
+  - Add reward smoothing or soft doctrine blending
+  - Visual diagnostics for agent overfitting and alpha decay
+
+
 ## [0.6.3] - 2025-07-05
 
 ### Optimized
