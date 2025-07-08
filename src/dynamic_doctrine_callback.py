@@ -1,5 +1,4 @@
 # === dynamic_doctrine_callback.py ===
-
 from stable_baselines3.common.callbacks import BaseCallback
 
 class DynamicDoctrineSwitchCallback(BaseCallback):
