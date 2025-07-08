@@ -98,7 +98,7 @@ model = PPO(
 # === Train the agent ===
 
 """
-Modify how many steps you want to train for: 10-50k is good for testing.
+Modify how many steps you want to train for: 1K is good for quick testing. 10-50k is good for thorough testing.
 At 100k-ish steps, you're at risk of overtraining
 overtraining risks: overfitting, hyperaggression, portfolio vals spiking during training but collapsing during eval
 """
@@ -106,10 +106,10 @@ overtraining risks: overfitting, hyperaggression, portfolio vals spiking during 
 print(f"Training model with tag: {args.tag}")
 
 if args.reward_type == "composite":
-    callback = DynamicDoctrineSwitchCallback(switch_interval=1500, verbose=True)
-    model.learn(total_timesteps=10_000, callback=callback)
+    callback = DynamicDoctrineSwitchCallback(switch_interval=150, verbose=True) #For more thorough testing, switch interval to 1500
+    model.learn(total_timesteps=1_000, callback=callback) # For more thorough testing, total timesteps to 10_000
 else:
-    model.learn(total_timesteps=10_000)
+    model.learn(total_timesteps=1_000)
 
 # === Save the model ===
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
