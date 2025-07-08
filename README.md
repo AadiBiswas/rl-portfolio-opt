@@ -1,12 +1,17 @@
 # Reinforcement Learning for Portfolio Optimization 
 
-This project applies deep reinforcement learning to the problem of dynamic portfolio allocation in financial markets. Using agents like PPO (Proximal Policy Optimization) and DDPG (Deep Deterministic Policy Gradient), I aim to develop and benchmark strategies across different market conditions and risk settings. This framework is intended to support multiple reward "doctrines"—including Log Return maximization, Sharpe-style risk-adjusted return, Drawdown-penalized stability, as well as an industry-realistic composite which dynamically alternates between doctrines.
+**VERSION 1 COMPLETE!**
 
-**🚧 WORK IN PROGRESS**
+This project applies deep reinforcement learning to the problem of dynamic portfolio allocation in financial markets. Using agents like PPO (Proximal Policy Optimization) and DDPG (Deep Deterministic Policy Gradient), I aim to develop and benchmark strategies across different market conditions and risk settings. This framework is intended to support multiple reward "doctrines"—including Log Return maximization, Sharpe-style risk-adjusted return, Drawdown-penalized stability, as well as an industry-realistic composite mode which dynamically alternates between doctrines.
+
+On average, my trained agents achieve **20–25%** alpha over 10K steps, even in execution-aware regimes which account for slippage and transaction costs. Some reward doctrines (particularly those penalizing drawdowns) outperform others like simple log-return maximization. I intentionally constrained training durations to avoid overfitting, choosing model aggression only when paired with dynamic doctrine switching—which allows the agent to hedge its risk-taking behavior.
+
+All model checkpoints are uploaded for full transparency, including early failures, overfit variants, and final candidates. 
+
 
 ## Goals
 - Simulate and evaluate trading agents using historical market data
-- Model transaction costs, slippage, and risk-adjusted returns
+- Model txn costs, slippage, and risk-adjusted returns
 - Extend environments and policy networks for practical portfolio management<br><br>
 
 ## HOW TO TRAIN AND TEST MODELS IN TERMINAL:
