@@ -5,9 +5,9 @@ All notable changes to this project will be documented in this file.
 ## [1.0.0] - 2025-07-09
 
 ### Added
-- Pushed latest, parametrically adjusted versions of all doctrine, training, and testing agents
-- Uploaded every model tested from this project's genesis
-  - **NOTE**: Most models, especially early ones, totally crash their portfolio values
+- Pushed latest versions of each doctrine, training, and testing agent
+- Uploaded all models tested from the genesis of project
+  - **NOTE**: Most models, especially early ones, completely crash portfolio values
   - Only recent models (generated from updated doctrines) can yeild 20-25% alpha across 365-day testing window
 
 ### Next Steps (Feel free to PR!)
