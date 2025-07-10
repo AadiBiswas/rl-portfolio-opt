@@ -7,24 +7,25 @@ from collections import deque
 
 class SharpeRewardEnv(BasePortfolioEnv):
     """
-    Reward = Sharpe-style reward: mean return / std deviation over recent steps.
-    Includes protections against division by zero, invalid (NaN/inf) values, and exploding rewards.
-    Uses a sliding window of recent returns to compute the reward.
+    Reward = Sharpe-style reward: mean / std over recent steps
+    - Multiplied by mean return to bias toward consistent positive growth
+    - Volatility-weighted for stability bias (penalizes noisy regimes)
+    - Now includes:
+      - Nonlinear Sharpe scaling (via tanh) for aggressive but bounded alpha
+      - Warm-start buffer to avoid early suppression
+      - Extended window for smoother regime detection
     """
     def __init__(self, *args, **kwargs):
-        self.sharpe_window = 20  # Window size for recent returns
-        self.recent_returns = deque(maxlen=self.sharpe_window)  # Initialize *before* super().__init__
+        self.sharpe_window = 25
+        self.recent_returns = deque([0.001] * 5, maxlen=self.sharpe_window)  # Warmstart with small gain
         super().__init__(*args, **kwargs)
 
     def reset(self):
-        self.recent_returns.clear()  # Clear return history between episodes
+        self.recent_returns.clear()
+        self.recent_returns.extend([0.001] * 5)  # Reset warmstart
         return super().reset()
 
     def compute_reward(self, returns, weights):
-        """
-        Compute reward based on Sharpe-style ratio: mean / std of recent returns.
-        Clipped to prevent reward explosion during training.
-        """
         r = np.dot(returns, weights)
 
         if not np.isfinite(r):
@@ -46,31 +47,16 @@ class SharpeRewardEnv(BasePortfolioEnv):
                 print(f"[Warning] Unstable Sharpe calculation: mean={mean:.6f}, std={std:.6f}")
             return 0.0
 
-        sharpe_like = mean / std
+        raw_sharpe = mean / (std + 1e-6)
+        nonlinear_scaling = np.tanh(raw_sharpe) * mean  # Aggressive growth bias
+        weight = 1.3 if std < 0.01 else 1.0 if std < 0.02 else 0.6
 
-        # === Optional: Volatility-aware dynamic weighting (might dampen model, but good insurance) ===
-        # Boost reward in stable environments (low std)
-        # if std < 0.01:
-        #     weight = 1.2
-        # elif std < 0.02:
-        #     weight = 1.0
-        # else:
-        #     weight = 0.7
-        # sharpe_like *= weight  # === Amplified & stabilized Sharpe ===
+        reward = nonlinear_scaling * weight
+        clipped_reward = np.clip(reward, -10.0, 10.0)
 
-        # === Optional: Gain penalty to discourage unrealistic spikes  (might dampen model, but good insurance)  ===
-        # if r > 0.05:
-        #     penalty = 0.02 * np.log1p(r)
-        #     sharpe_like -= penalty
-        #     if self.verbose:
-        #         print(f"[Debug] Gain penalty applied: {penalty:.6f}")
-
-        clipped_reward = np.clip(sharpe_like, -10.0, 10.0)
-
-        if self.verbose and sharpe_like != clipped_reward:
-            print(f"[Debug] Raw Sharpe reward {sharpe_like:.6f} clipped to {clipped_reward:.6f}")
+        if self.verbose and reward != clipped_reward:
+            print(f"[Debug] Raw Sharpe reward {reward:.6f} clipped to {clipped_reward:.6f}")
 
         return clipped_reward
 
-# Alias class for cleaner import elsewhere
 PortfolioEnv = SharpeRewardEnv

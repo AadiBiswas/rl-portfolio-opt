@@ -66,11 +66,11 @@ class DrawdownPenaltyExecutionEnv(ExecutionAwarePortfolioEnv):
             if self.verbose:
                 print(f"[Debug] Recovery bonus applied: {gain_bonus:.6f}")
 
-        # === Final reward formula (drawdown-boosted variant) ===
+        # === Final reward formula (drawdown-boosted variant) === MORE AGGRESSIVE THAN NON-EXECUTION VARIANT
         reward = (
-            (log_r * 1.7) +                             # Boost log signal
+            (log_r * 1.3) +                             # Boost log signal
             (sharpe_bonus * sharpe_weight) -            # Sharpe bonus preserved
-            (drawdown ** 2) * drawdown_penalty_weight + # Heavier penalty on severe dips
+            (drawdown ** 1.64) * drawdown_penalty_weight + # Heavier penalty on severe dips
             gain_bonus                                  # Reward recovery
         )
 

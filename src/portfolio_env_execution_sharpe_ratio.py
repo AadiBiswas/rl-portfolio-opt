@@ -7,12 +7,11 @@ from collections import deque
 class SharpeRewardExecutionEnv(ExecutionAwarePortfolioEnv):
     """
     Reward = (mean / std) * mean * weight
-    - Encourages consistent upward returns
-    - Penalizes volatile behavior
-    - Fully execution-aware: uses net return (after slippage + cost)
+    - Boosted with longer window and volatility-aware scaling
+    - Lower reward scaling under unstable regimes
     """
     def __init__(self, *args, **kwargs):
-        self.sharpe_window = 10  # Shorter window for faster reaction
+        self.sharpe_window = 30  # Increased for more smoothing under execution noise
         self.recent_returns = deque(maxlen=self.sharpe_window)
         super().__init__(*args, **kwargs)
 
@@ -21,7 +20,7 @@ class SharpeRewardExecutionEnv(ExecutionAwarePortfolioEnv):
         return super().reset()
 
     def compute_reward(self, net_return, weights):
-        r = net_return  # Already execution-adjusted
+        r = net_return
 
         if not np.isfinite(r):
             if self.verbose:
@@ -50,16 +49,14 @@ class SharpeRewardExecutionEnv(ExecutionAwarePortfolioEnv):
         elif std < 0.02:
             weight = 1.0
         else:
-            weight = 0.7
+            weight = 0.6  # Slightly lower than non-exec for stricter penalty
 
         reward = sharpe * mean * weight
 
-        # === Final clipping ===
         clipped_reward = np.clip(reward, -10.0, 10.0)
         if self.verbose and reward != clipped_reward:
             print(f"[Debug] Raw Sharpe reward {reward:.6f} clipped to {clipped_reward:.6f}")
 
         return clipped_reward
 
-# Alias for external import
 PortfolioEnv = SharpeRewardExecutionEnv

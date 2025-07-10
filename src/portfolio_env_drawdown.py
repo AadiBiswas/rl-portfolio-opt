@@ -58,7 +58,7 @@ class DrawdownPenaltyEnv(BasePortfolioEnv):
             log_weight = 0.88
             drawdown_penalty_weight = 0.30
 
-        sharpe_weight = 0.10 if std_dev > 0.015 else 0.0
+        sharpe_weight = 0.01 if std_dev > 0.015 else 0.0
 
         # === Gain bonus for full recovery (optional) ===
         gain_bonus = 0.0
@@ -71,9 +71,9 @@ class DrawdownPenaltyEnv(BasePortfolioEnv):
 
         # ===  reward formula (drawdown-boosted variant) ===
         reward = (
-         (log_r * 1.7) +                            # Boost log signal
+         (log_r * 1.1) +                            # Boost log signal
          (sharpe_bonus * sharpe_weight) -          # Sharpe bonus preserved
-         (drawdown ** 2) * drawdown_penalty_weight +  # Heavier penalty on severe dips
+         (drawdown ** 1.21) * drawdown_penalty_weight +  # Heavier penalty on severe dips
          gain_bonus                                # Reward recovery
         )
 

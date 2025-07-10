@@ -4,7 +4,7 @@
 
 import gym
 import numpy as np
-from portfolio_env_execution_log_return import LogReturnEnv
+from portfolio_env_execution_log_return import LogReturnExecutionEnv
 from portfolio_env_execution_sharpe_ratio import SharpeRewardExecutionEnv
 from portfolio_env_execution_drawdown import DrawdownPenaltyExecutionEnv
 
@@ -18,7 +18,7 @@ class ExecutionAwareCompositeEnv(gym.Env):
         super().__init__()
         self.verbose = verbose
         self.envs = {
-            "log": LogReturnEnv(price_df=price_df, window_size=window_size,
+            "log": LogReturnExecutionEnv(price_df=price_df, window_size=window_size,
                                 verbose=verbose, max_episode_length=max_episode_length),
             "sharpe": SharpeRewardExecutionEnv(price_df=price_df, window_size=window_size,
                                                verbose=verbose, max_episode_length=max_episode_length),

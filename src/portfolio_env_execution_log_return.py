@@ -46,6 +46,7 @@ class LogReturnExecutionEnv(ExecutionAwarePortfolioEnv):
 
         reward = log_r * scale
 
+        """"
         # === Sharpe-style consistency bonus ===
         sharpe_bonus = 0.0
         if len(self.recent_returns) >= self.vol_window:
@@ -55,13 +56,14 @@ class LogReturnExecutionEnv(ExecutionAwarePortfolioEnv):
             reward += sharpe_bonus
             if self.verbose:
                 print(f"[Debug] Sharpe-style bonus: {sharpe_bonus:.6f}")
+        """
 
         # === Gain bonus for new highs ===
         projected_value = self.portfolio_value * (1 + r)
         gain_bonus = 0.0
         if projected_value > self.max_portfolio_value:
             rel_gain = (projected_value - self.max_portfolio_value) / (self.max_portfolio_value + 1e-8)
-            gain_bonus = 0.20 * np.log1p(rel_gain)  # slightly more conservative than before
+            gain_bonus = 0.50 * np.log1p(rel_gain)  # slightly more aggressive than before
             reward += gain_bonus
             if self.verbose:
                 print(f"[Debug] Gain bonus applied: {gain_bonus:.6f}")

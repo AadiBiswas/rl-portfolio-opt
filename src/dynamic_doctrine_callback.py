@@ -37,9 +37,9 @@ class DynamicDoctrineSwitchCallback(BaseCallback):
             # New thresholds based on percent changes
             pct_change = avg_change / (self.performance_window[0] + 1e-8)
 
-            if pct_change < -0.002:
+            if pct_change < -0.001:
                 new_doctrine = "drawdown"
-            elif pct_change > 0.001:
+            elif pct_change > 0.0001:
                 new_doctrine = "sharpe"
             else:
                 new_doctrine = "log"

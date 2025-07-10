@@ -46,9 +46,9 @@ class LogReturnEnv(BasePortfolioEnv):
 
         reward = log_r * scale  # === Volatility-scaled log return ===
 
-        """""
+        
         # === Sharpe-style consistency bonus ===
-        Good to include, but commenting this to preserve "pure" log return doctrine
+        # Good to include, but commenting this to preserve "pure" log return doctrine
         sharpe_bonus = 0.0
         if len(self.recent_returns) >= self.vol_window:
             mean_return = np.mean(self.recent_returns)
@@ -57,7 +57,7 @@ class LogReturnEnv(BasePortfolioEnv):
             reward += sharpe_bonus
             if self.verbose:
                 print(f"[Debug] Sharpe-style bonus: {sharpe_bonus:.6f}")
-        """""
+       
         
         # === Gain bonus for new highs ===
         projected_value = self.portfolio_value * (1 + r)
@@ -69,7 +69,7 @@ class LogReturnEnv(BasePortfolioEnv):
             if self.verbose:
                 print(f"[Debug] Gain bonus applied: {gain_bonus:.6f}")
 
-        # === Training-aware decay (optional) ===
+        # === Training-aware decay (optional, more under jurisdiction of execution-aware) ===
         # decay = 0.995 ** self.steps_elapsed  # exponential decay over steps
         # reward *= decay  # === Dampens late-stage reward inflation ===
 
