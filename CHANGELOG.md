@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1] - 2025-07-10
+
+### Enhanced
+- **Doctrine Environments** (`src/`):
+  - Tuned reward parameters across all doctrines for improved alpha generation.
+  - LogReturnEnv now demonstrates positive alpha under execution-aware constraints via refined volatility scaling and gain rewards.
+  - Sharpe and Drawdown environments retain doctrinal purity while improving reward clarity and cumulative growth.
+
+### Fixed
+- **train_agent.py**:
+  - Corrected import logic for doctrine and composite environments.
+  - Updated doctrinal guidance to reflect training depth:
+    - All doctrines perform reasonably at **10k steps**, but Sharpe-based agents require **100k steps** for Sharpe ratio stability.
+  
+- **test_agent.py**:
+  - Fixed class imports and doctrinal aliasing to ensure accurate evaluation of both execution-aware and non-aware models.
+
+
 ## [1.0.0] - 2025-07-09
 
 ### Added
