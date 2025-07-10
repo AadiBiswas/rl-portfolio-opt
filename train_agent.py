@@ -58,7 +58,7 @@ elif args.reward_type == "drawdown":
         from portfolio_env_drawdown import PortfolioEnv
 elif args.reward_type == "composite":
     if args.execution_aware:
-        from portfolio_env_composite_execution import ExecutionAwareCompositeEnv as PortfolioEnv
+        from portfolio_env_execution_composite import ExecutionAwareCompositeEnv as PortfolioEnv
     else:
         from portfolio_env_composite import CompositeEnv as PortfolioEnv
     from dynamic_doctrine_callback import DynamicDoctrineSwitchCallback
@@ -98,18 +98,20 @@ model = PPO(
 # === Train the agent ===
 
 """
-Modify how many steps you want to train for: 1K is good for quick testing. 10-50k is good for thorough testing.
-At 100k-ish steps, you're at risk of overtraining
+Modify how many steps you wish to train for: 
+ - 10K is optimal for Log, Drawdown, and Composite. 
+ - 50-100K is optimal for Sharpe
+At 100k-ish steps (less Sharpe), you're at risk of overtraining
 overtraining risks: overfitting, hyperaggression, portfolio vals spiking during training but collapsing during eval
 """
 
 print(f"Training model with tag: {args.tag}")
 
 if args.reward_type == "composite":
-    callback = DynamicDoctrineSwitchCallback(switch_interval=150, verbose=True) #For more thorough testing, switch interval to 1500
-    model.learn(total_timesteps=1_000, callback=callback) # For more thorough testing, total timesteps to 10_000
+    callback = DynamicDoctrineSwitchCallback(switch_interval=1500, verbose=True) 
+    model.learn(total_timesteps=10_000, callback=callback) 
 else:
-    model.learn(total_timesteps=1_000)
+    model.learn(total_timesteps=10_000)
 
 # === Save the model ===
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
